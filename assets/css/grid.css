@@ -1,0 +1,55 @@
+.header,
+#game_field_wrapper {
+  width: 470px;
+  margin: 15px auto;
+}
+
+
+.header {
+  list-style: none;
+}
+.header li {
+  display: inline-block;
+  float: left;
+  text-align: center;
+}
+.header__score,
+.header__step {
+  width: 156px;
+  padding-top: 17px;
+  font-size: 18px;
+}
+#score,
+#step {
+  padding: 5px 10px;
+  border-radius: 3px;
+  color: #030611;
+}
+
+#next_balls {
+  width: 158px;
+}
+
+#game_field {
+  width: 470px;
+}
+#next_balls td,
+#game_field td {
+  width: 50px;
+  height: 50px;
+  background-color: #c5c5c5;
+  border-radius: 3px;
+  text-align: center;
+}
+
+#score,
+#step,
+#next_balls td,
+#game_field td {
+  /* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#87e0fd+0,53cbf1+40,05abe0+100;Blue+3D+%23+16 */
+  background: #87e0fd; /* Old browsers */
+  background: -moz-linear-gradient(-45deg, #87e0fd 0%, #53cbf1 40%, #05abe0 100%); /* FF3.6-15 */
+  background: -webkit-linear-gradient(-45deg, #87e0fd 0%,#53cbf1 40%,#05abe0 100%); /* Chrome10-25,Safari5.1-6 */
+  background: linear-gradient(135deg, #87e0fd 0%,#53cbf1 40%,#05abe0 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#87e0fd', endColorstr='#05abe0',GradientType=1 ); /* IE6-9 fallback on horizontal gradient */
+}

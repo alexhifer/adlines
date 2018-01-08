@@ -1,0 +1,26 @@
+{
+  "name": "adlines",
+  "productName": "Classic game - Lines",
+  "description": "This is the classic game - Lines",
+  "version": "1.0.0",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron main.js",
+    "package-win": "electron-packager . adlines --overwrite --asar --platform=win32 --arch=ia32 --icon=assets/images/icons/icon_256x256.ico --prune=true --out=builds --version-string.CompanyName=CE --version-string.FileDescription=CE --version-string.ProductName=\"ADLines\"",
+    "package-linux": "electron-packager . adlines --overwrite --asar --platform=linux --arch=x64 --icon=assets/images/icons/icon_256x256.png --prune=true --out=builds",
+    "create-debian-installer": "electron-installer-debian --src builds/adlines-linux-x64/ --arch amd64 --config debian.json"
+  },
+  "keywords": [
+    "Lines",
+    "game"
+  ],
+  "author": "Alexey Degtyarev",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "latest",
+    "electron-builder": "latest",
+    "electron-installer-debian": "latest",
+    "electron-packager": "^10.1.1",
+    "electron-winstaller": "^2.6.3"
+  }
+}

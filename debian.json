@@ -1,0 +1,14 @@
+{
+  "name": "adlines",
+  "productName": "ADLines",
+  "dest": "installers/",
+  "icon": "assets/images/icons/icon_256x256.png",
+  "version": "1.0.0",
+  "categories": [
+    "Game"
+  ],
+  "section": "games",
+  "lintianOverrides": [
+    "changelog-file-missing-in-native-package"
+  ]
+}

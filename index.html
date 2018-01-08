@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lines</title>
+  <link rel="stylesheet" href="./assets/css/application.css">
+  <link rel="stylesheet" href="./assets/css/grid.css">
+  <link rel="stylesheet" href="./assets/css/lines.css">
+</head>
+<body>
+  <ul class="header clearfix">
+    <li class="header__score">Score: <span id="score">0</span></li>
+    <li class="header__next_balls" id="next_balls_wrapper"></li>
+    <li class="header__step">Step: <span id="step">0</span></li>
+  </ul>
+  <div id="game_field_wrapper"></div>
+
+  <script>window.$ = window.jQuery = require('./assets/js/vendor/jquery.min.js');</script>
+  <script src="./assets/js/grid.js"></script>
+  <script src="./assets/js/lines.js"></script>
+  <script src="./assets/js/game.js"></script>
+</body>
+</html>
