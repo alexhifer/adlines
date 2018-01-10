@@ -1,0 +1,58 @@
+#modal {
+  display: none;
+  max-width: 400px;
+  padding: 10px;
+  border: 2px solid #ffffff;
+  color: #030611;
+
+  /* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#87e0fd+0,53cbf1+40,05abe0+100;Blue+3D+%23+16 */
+  background: #87e0fd; /* Old browsers */
+  background: -moz-linear-gradient(-45deg, #87e0fd 0%, #53cbf1 40%, #05abe0 100%); /* FF3.6-15 */
+  background: -webkit-linear-gradient(-45deg, #87e0fd 0%,#53cbf1 40%,#05abe0 100%); /* Chrome10-25,Safari5.1-6 */
+  background: linear-gradient(135deg, #87e0fd 0%,#53cbf1 40%,#05abe0 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#87e0fd', endColorstr='#05abe0',GradientType=1 ); /* IE6-9 fallback on horizontal gradient */
+}
+
+#simplemodal-container a.modalCloseImg {
+  display: inline;
+  width: 24px;
+  height: 24px;
+  z-index: 3200;
+	position: absolute;
+	top: -10px;
+	right: -10px;
+	cursor: pointer;
+  background: url('../images/modal_close.png') no-repeat;
+}
+
+#modal .score_table th {
+  padding: 0 10px;
+}
+#modal .score_table td {
+  padding: 5px 10px;
+  text-align: center;
+}
+#modal .score_table__title {
+  padding-bottom: 5px !important;
+  color: #145cff;
+  font-size: 16px;
+}
+#modal .score_table__score {
+  text-align: center;
+}
+
+#modal .game_over {
+  font-size: 20px;
+  white-space: nowrap;
+}
+#modal .game_over__title {
+  text-align: center;
+  font-weight: bold;
+  color: #145cff;
+}
+#modal .game_over__score_text {
+  text-align: center;
+}
+#modal .game_over__score {
+  font-weight: bold;
+}

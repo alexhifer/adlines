@@ -19,6 +19,8 @@ function Lines() {
   this.gameFieldShortestPath = null;
   this.clickBlock = false;
   this.ballJumpTop = '8px';
+
+  this.scoreList = new ScoreList();
 };
 
 Lines.prototype.buildField = function(rows, columns) {
@@ -70,8 +72,22 @@ Lines.prototype.randomColumn = function() {
   return this.randomNumber(this.fieldColumns) - 1;
 };
 
-Lines.prototype.ballElement = function(number) {
-  return $('<span>').addClass('ball-' + number);
+Lines.prototype.ballElement = function(number, animation) {
+  animation = animation || false
+
+  ballElement = $('<span>').addClass('ball-' + number);
+  if(animation) {
+    ballElement
+      .css('width', '6px')
+      .css('height', '6px')
+      .css('opacity', '0.25')
+      .css('border-radius', '3px')
+  }
+
+  return ballElement;
+};
+Lines.prototype.ballShowAnimate = function(ballElement) {
+  ballElement.animate({ opacity: 1, height: '36px', width: '36px', borderRadius: '18px' });
 };
 
 Lines.prototype.generateNextBalls = function() {
@@ -86,7 +102,9 @@ Lines.prototype.drawNextBalls = function() {
     var cell = $(table.rows[0].cells[col])
 
     cell.html('');
-    cell.append(this.ballElement(this.nextBalls[col]));
+    ballElement = this.ballElement(this.nextBalls[col], true);
+    cell.append(ballElement);
+    this.ballShowAnimate(ballElement);
   }
 };
 
@@ -108,7 +126,7 @@ Lines.prototype.addBallEvent = function(ballElement) {
   var self = this;
 
   ballElement.click(function(event) {
-    if(self.canClick()) {
+    if(!self.canClick()) {
       return;
     }
 
@@ -124,9 +142,10 @@ Lines.prototype.addBallEvent = function(ballElement) {
 Lines.prototype.hangFieldEvents = function() {
   var self = this;
 
-  $(this.getGameFieldTable).find('td').click(function(event) {
+  $(this.getGameFieldTable()).find('td').click(function(event) {
     var tdElement = $(event.target);
-    if(self.canClick() || !self.hasSelect() || !tdElement.is('td') || tdElement.find('span').length > 0) {
+
+    if(!self.canClick() || (!self.hasSelect() || !tdElement.is($('td')) || tdElement.find('span').length > 0)) {
       return;
     }
 
@@ -147,7 +166,7 @@ Lines.prototype.moveSelectBall = function(tdElement) {
 };
 
 Lines.prototype.canClick = function() {
-  return this.clickBlock;
+  return !this.clickBlock;
 };
 Lines.prototype.allowClick = function() {
   this.clickBlock = false;
@@ -159,20 +178,24 @@ Lines.prototype.disallowClick = function() {
 Lines.prototype.refresh = function() {
   this.resetSelectBall();
   applyScoreResult = this.applyScore();
-  this.drawGameField();
 
-  if(!applyScoreResult) {
+  if(applyScoreResult) {
+    var self = this;
+    setTimeout(() => { 
+      self.drawGameField(); 
+      this.allowClick();
+    }, 200);
+  } else {
     this.generateGameField();
-    if(this.applyScore()) {
+    if(this.applyScore(false)) {
       this.updateStep();
     }
     this.drawGameField();
     this.generateNextBalls();
     this.drawNextBalls();
     this.checkEndGame();
+    this.allowClick();
   }
-
-  this.allowClick();
 };
 
 Lines.prototype.moveBallAnimate = function(destRow, destCol) {
@@ -183,18 +206,18 @@ Lines.prototype.moveBallAnimate = function(destRow, destCol) {
   this.buildMovePath(destRow, destCol);
   this.disallowClick();
 
-  var timerId = setInterval(function() {
+  this.moveBallAnimateTimerId = setInterval(function() {
     var step = self.moveBallArray[iStep];
     var stepRow = step[0];
     var stepCol = step[1];
 
     self.gameField[stepRow][stepCol] = self.gameField[self.selectBallRow][self.selectBallCol];
     self.gameField[self.selectBallRow][self.selectBallCol] = null;
-    self.drawGameField();
+    self.drawGameField(true);
 
     if(iStep + 1 >= self.moveBallArray.length) {
       self.refresh();
-      clearInterval(timerId);
+      clearInterval(self.moveBallAnimateTimerId);
     } else {
       self.selectBallRow = stepRow;
       self.selectBallCol = stepCol;
@@ -202,6 +225,9 @@ Lines.prototype.moveBallAnimate = function(destRow, destCol) {
     
     iStep++;
   }, 200);
+};
+Lines.prototype.stopMoveBallAnimate = function() {
+  clearInterval(this.moveBallAnimateTimerId);
 };
 Lines.prototype.buildMovePath = function(destRow, destCol) {
   var curRow = destRow;
@@ -258,11 +284,16 @@ Lines.prototype.resetSelectBall = function() {
   this.selectBallCol = null;
 };
 
-Lines.prototype.applyScore = function() {
-  return this.applyHorizontalScore() || this.applyVerticalScore() || 
-         this.applyDiagonalLeftToRightScore() || this.applyDiagonalRightToLeftScore();
+Lines.prototype.applyScore = function(updateScore) {
+  if(updateScore === undefined) {
+    updateScore = true;
+  }
+
+  return this.applyHorizontalScore(updateScore) || this.applyVerticalScore(updateScore) || 
+         this.applyDiagonalLeftToRightScore(updateScore) || this.applyDiagonalRightToLeftScore(updateScore) ||
+         this.applyCrossScore(updateScore);
 };
-Lines.prototype.applyHorizontalVerticalScore = function(position) {
+Lines.prototype.applyHorizontalVerticalScore = function(position, updateScore) {
   var anyUpdateScore = false;
 
   for(var row = 0; row < this.fieldRows; row++) {
@@ -286,20 +317,23 @@ Lines.prototype.applyHorizontalVerticalScore = function(position) {
         }
       }
 
-      this.updateScore(applyBalls);
+      if(updateScore) {
+        this.updateScore(applyBalls);
+      }
+
       anyUpdateScore = true;
     }
   }
 
   return anyUpdateScore;
 };
-Lines.prototype.applyHorizontalScore = function() {
-  return this.applyHorizontalVerticalScore('horizontal');
+Lines.prototype.applyHorizontalScore = function(updateScore) {
+  return this.applyHorizontalVerticalScore('horizontal', updateScore);
 };
-Lines.prototype.applyVerticalScore = function() {
-  return this.applyHorizontalVerticalScore('vertical');
+Lines.prototype.applyVerticalScore = function(updateScore) {
+  return this.applyHorizontalVerticalScore('vertical', updateScore);
 };
-Lines.prototype.applyDiagonalLeftToRightScore = function() {
+Lines.prototype.applyDiagonalLeftToRightScore = function(updateScore) {
   var startCoordinates = new Array([0, 0]);
   for(var row = 1; row <= this.fieldRows - this.minApply; row++) {
     startCoordinates.push([row, 0]);
@@ -328,14 +362,17 @@ Lines.prototype.applyDiagonalLeftToRightScore = function() {
         this.gameField[row + startScore + applyIndex][col + startScore + applyIndex] = null;
       }
 
-      this.updateScore(applyBalls);
+      if(updateScore) {
+        this.updateScore(applyBalls);
+      }
+      
       return true;
     }
   }
 
   return false;
 };
-Lines.prototype.applyDiagonalRightToLeftScore = function() {
+Lines.prototype.applyDiagonalRightToLeftScore = function(updateScore) {
   var startCoordinates = new Array();
   for(var row = 1; row <= this.fieldRows - this.minApply; row++) {
     startCoordinates.push([row, this.fieldRows - 1]);
@@ -364,8 +401,56 @@ Lines.prototype.applyDiagonalRightToLeftScore = function() {
         this.gameField[row + startScore + applyIndex][col - startScore - applyIndex] = null;
       }
 
-      this.updateScore(applyBalls);
+      if(updateScore) {
+        this.updateScore(applyBalls);
+      }
+      
       return true;
+    }
+  }
+
+  return false;
+};
+Lines.prototype.applyCrossScore = function(updateScore) {
+  for(var row = 1; row < this.fieldRows - 1; row++) {
+    for(var col = 1; col < this.fieldColumns - 1; col++) {
+      var resultString = '';
+
+      var addToResult = function(fieldBall) {
+        if(fieldBall != null) {
+          resultString += fieldBall.toString();
+        }
+      }
+
+      // lefttop
+      addToResult(this.gameField[row - 1][col - 1]);
+      // righttop
+      addToResult(this.gameField[row - 1][col + 1]);
+      // leftbottom
+      addToResult(this.gameField[row + 1][col - 1]);
+      // rightbottom
+      addToResult(this.gameField[row + 1][col + 1]);
+      // current
+      addToResult(this.gameField[row][col]);
+
+      if(resultString.length == 5 && jQuery.unique(resultString.split('')).length == 1) {
+        // lefttop
+        this.gameField[row - 1][col - 1] = null;
+        // righttop
+        this.gameField[row - 1][col + 1] = null;
+        // leftbottom
+        this.gameField[row + 1][col - 1] = null;
+        // rightbottom
+        this.gameField[row + 1][col + 1] = null;
+        // current
+        this.gameField[row][col] = null;
+  
+        if(updateScore) {
+          this.updateScore(5);
+        }
+  
+        return true;
+      }
     }
   }
 
@@ -489,8 +574,22 @@ Lines.prototype.stopBallAnimation = function() {
 
 Lines.prototype.checkEndGame = function() {
   if(this.hasEndGame()) {
-    alert('Game over!');
-    this.start();
+    if(this.score > 0) {
+      this.scoreList.add(this.score, this.step);
+    }
+
+    var self = this;
+    var gameOverBlock = $('<div>').addClass('game_over');
+    var gameOverScore = $('<span>').addClass('game_over__score').text(this.score);
+    var gameOverSteps = $('<span>').addClass('game_over__steps').text(this.step);
+    gameOverBlock.append($('<div>').addClass('game_over__title').text('Game over!'));
+    gameOverBlock.append($('<div>').addClass('game_over__score_text').text('Your score is ').append(gameOverScore).append(' and step ').append(gameOverSteps));
+
+    $('#modal').html(gameOverBlock).modal({ onClose: function(dialog) {
+      $.modal.close();
+      self.start();
+      self.scoreList.show();
+    } });
   }
 };
 
@@ -512,7 +611,11 @@ Lines.prototype.hasEndGame = function() {
   return true;
 };
 
-Lines.prototype.drawGameField = function() {
+Lines.prototype.drawGameField = function(withoutAnimate) {
+  if(withoutAnimate === undefined) {
+    withoutAnimate = false;
+  }
+
   var table = this.getGameFieldTable();
 
   for(var row = 0; row < this.fieldRows; row++) {
@@ -520,15 +623,30 @@ Lines.prototype.drawGameField = function() {
       var cell = $(table.rows[row].cells[col]);
       var ballNum = this.gameField[row][col];
       if(ballNum != null && cell.html().length == 0) {
-        var ballElement = this.ballElement(ballNum);
-
+        // add ball
+        var ballElement = this.ballElement(ballNum, !withoutAnimate);
         this.addBallEvent(ballElement);
         cell.append(ballElement);
+        if(!withoutAnimate) {
+          this.ballShowAnimate(ballElement);
+        }
       } else if(ballNum == null && cell.html().length > 0) {
-        cell.html('');
+        // remove ball
+        if(withoutAnimate) {
+          cell.html('');
+        } else {
+          cell.find('span').animate({ opacity: 0.25, height: '6px', width: '6px', borderRadius: '3px' }, 200, function() {
+            $(this).remove();
+          })
+        }
       }
     }
   }
+};
+
+Lines.prototype.addScoreToList = function() {
+  this.scoreList.unshift({ value: this.score, timestamp: this.getCurrentTimestamp() });
+  this.saveScoreListToStorage();
 };
 
 Lines.prototype.start = function() {
@@ -545,4 +663,10 @@ Lines.prototype.start = function() {
   this.drawNextBalls();
   this.drawGameField();
   this.hangFieldEvents();
+  this.allowClick();
 };
+
+Lines.prototype.restart = function() {
+  this.stopMoveBallAnimate();
+  this.start();
+}

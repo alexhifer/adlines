@@ -13,6 +13,12 @@ const menuTemplate = [
         }
       },
       {
+        label: 'Scores',
+        click (item, focusedWindow) {
+          win.webContents.send('showScores')
+        }
+      },
+      {
         type: 'separator'
       },
       {
@@ -29,7 +35,6 @@ function createWindow () {
     width: 545,
     height: 635,
     center: true,
-    resizable: false,
     icon: path.join(__dirname, 'assets/images/icons/icon_256x256.png')
   })
 
